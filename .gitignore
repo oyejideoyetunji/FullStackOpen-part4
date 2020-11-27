@@ -3,3 +3,9 @@
 /requests
 
 node_modules
+
+utils/for_testing.js
+
+tests/palindrome.test.js
+
+tests/average.test.js
