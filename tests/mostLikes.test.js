@@ -1,3 +1,4 @@
+const mongoose = require("mongoose")
 const {
     blogs, singleBlog, mostLikes
 } = require("../utils/list_helper")
@@ -25,4 +26,9 @@ describe("favourite blog", () => {
         })
     })
 
+})
+
+
+afterAll(() => {
+    mongoose.connection.close()
 })

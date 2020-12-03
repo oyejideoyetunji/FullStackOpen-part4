@@ -94,21 +94,21 @@ function favouriteBlog(blogs){
 function mostBlogs(blogs){
     if (blogs.length === 0) return null;
     if (blogs.length === 1){
-        return { author: blogs[0].author, blogs: 1 }
+        return { author: blogs[0].author, blogCount: 1 }
     }
 
     let authors = {};
-    authors[blogs[0].author] = { author: blogs[0].author, blogs: 0 };
     let authorWithMostBlog = blogs[0].author;
+    authors[authorWithMostBlog] = { author: authorWithMostBlog, blogCount: 0 };
 
     for(const blog of blogs){
         if(blog.author in authors){
-            authors[blog.author].blogs += 1;
-            if (authors[blog.author].blogs > authors[authorWithMostBlog].blogs){
+            authors[blog.author].blogCount += 1;
+            if (authors[blog.author].blogCount > authors[authorWithMostBlog].blogCount){
                 authorWithMostBlog = blog.author
             }
         }else {
-            authors[blog.author] = { author: blog.author, blogs: 1 }
+            authors[blog.author] = { author: blog.author, blogCount: 1 }
         }
     }
 
@@ -122,8 +122,8 @@ function mostLikes(blogs) {
     }
 
     let authors = {};
-    authors[blogs[0].author] = { authorName: blogs[0].author, likes: 0 };
     let authorWithMostLikes = blogs[0].author;
+    authors[authorWithMostLikes] = { authorName: authorWithMostLikes, likes: 0 };
 
     for (const blog of blogs) {
         if (blog.author in authors) {

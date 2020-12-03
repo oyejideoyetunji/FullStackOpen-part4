@@ -14,12 +14,12 @@ describe("most blogs", () => {
     test("of a blog list with just one item is that item", () => {
         expect(mostBlogs(singleBlog)).toEqual({
             author: "Robert C. Martin",
-            blogs:  1
+            blogCount:  1
         })
     })
 
     test("of a blog list more than one is calculated properly", () => {
-        expect(mostBlogs(blogs)).toEqual({ author: "Robert C. Martin", blogs: 3 })
+        expect(mostBlogs(blogs)).toEqual({ author: "Robert C. Martin", blogCount: 3 })
     })
 
 })
