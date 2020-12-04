@@ -3,9 +3,9 @@ const uniqueValidator = require("mongoose-unique-validator")
 
 const blogSchema = mongoose.Schema({
     title:  { type: String, minlength: 8, required: true, unique: true },
-    author: { type: String, minlength: 8, required: true, unique: true },
+    author: { type: String, minlength: 8, required: true },
     url:    { type: String, minlength: 8, required: true, unique: true },
-    likes:  { type: Number, min: 0, required: true, unique: true, }
+    likes:  { type: Number, min: 0, required: true }
 })
 
 blogSchema.plugin(uniqueValidator)
