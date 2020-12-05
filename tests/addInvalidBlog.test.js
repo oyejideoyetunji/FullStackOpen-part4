@@ -1,6 +1,5 @@
 const mongoose = require("mongoose")
-const logger = require("../utils/logger")
-const { initialBlogs, initializeDB, addABlog, getAllBlogs } = require("./testHelper")
+const { initialBlogs, initializeDB, addABlog, getBlogsInDB } = require("./testHelper")
 
 
 
@@ -8,16 +7,15 @@ beforeEach(initializeDB)
 
 test("An incomplete blog document will not be saved to DB", async () => {
     const newBlog = {
-        "title": "javascript Async/await",
-        "author": "oluwatobi oyejide",
+        "author": "tobi oyejide",
+        "likes": 4
     }
 
     await addABlog(newBlog)
         .expect(400)
-        .catch(error => logger.error(error))
 
-    const response = await getAllBlogs()
-    expect(response.body).toHaveLength(initialBlogs.length)
+    const blogs = await getBlogsInDB()
+    expect(blogs).toHaveLength(initialBlogs.length)
 })
 
 afterAll(() => {

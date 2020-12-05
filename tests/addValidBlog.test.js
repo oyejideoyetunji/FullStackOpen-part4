@@ -1,6 +1,5 @@
 const mongoose = require("mongoose")
-const logger = require("../utils/logger")
-const { initialBlogs, initializeDB, getAllBlogs, addABlog } = require("./testHelper")
+const { initialBlogs, initializeDB, addABlog, getBlogsInDB } = require("./testHelper")
 
 
 
@@ -17,9 +16,8 @@ test("A vaid blog document will be saved to DB", async() => {
     await addABlog(newBlog)
         .expect(201)
         .expect("Content-Type", /application\/json/)
-        .catch(error => { logger.error(error) })
-    const response = await getAllBlogs();
-    if(response) expect(response.body).toHaveLength(initialBlogs.length + 1);
+    const blogs = await getBlogsInDB();
+    if(blogs) expect(blogs).toHaveLength(initialBlogs.length + 1);
 
 })
 
