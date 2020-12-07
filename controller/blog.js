@@ -1,4 +1,5 @@
 const Blog = require("../model/blog")
+const User = require("../model/user")
 const blogRouter = require("express").Router()
 
 
@@ -59,18 +60,31 @@ blogRouter.put("/:id", async (request, response, next) => {
 })
 
 blogRouter.post("/", async (request, response, next) => {
-    const formatedBody = {
-        ...request.body,
-        "likes": request.body.likes ? request.body.likes : 0
-    }
-    const blog = new Blog(formatedBody)
 
     try {
-        const result = await blog.save()
-        if(result){
-            response.status(201).json(result)
+        if(request.body.userId){
+            const user = await User.findById(request.body.userId)
+            if(user){
+                delete request.body.userId
+
+                const blog = new Blog({
+                    ...request.body,
+                    "likes": request.body.likes ? request.body.likes : 0,
+                    user: user._id
+                })
+                const newBlog = await blog.save()
+                if (newBlog) {
+                    user.blogs = user.blogs.concat(newBlog._id)
+                    await user.save()
+                    response.status(201).json(newBlog)
+                } else {
+                    response.status(500).json({ message: "an error ocurred on the server" })
+                }
+            }else{
+                response.status(400).json({ message: "invalid or non-existing user id in blog data" })
+            }
         }else {
-            response.status(500).json({ message: "an error ocurred from the server" })
+            response.status(400).json({ message: "incomplete blog data" })
         }
     } catch(error){
         next(error)
