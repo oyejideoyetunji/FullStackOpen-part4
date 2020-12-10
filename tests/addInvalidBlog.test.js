@@ -1,8 +1,7 @@
 const mongoose = require("mongoose")
-const { initialBlogs, initializeDB, addABlog, getBlogsInDB } = require("./testHelper")
+const { initialBlogs, initialUser, login, initializeDB, addABlog, getBlogsInDB } = require("./testHelper")
 
 
-const token = "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imluc3BpcmVkamFtZXMiLCJpZCI6IjVmY2YzNjM1NTEyMGRhNmIwYTUxOGFjOCIsImlhdCI6MTYwNzQ0MjQ2Nn0._AIzSKaP0QD96_dPKaUpRKmvvwbrV-EyHyu-RRBP-HU"
 
 beforeEach(initializeDB)
 
@@ -12,11 +11,14 @@ test("An incomplete blog document will not be saved to DB", async () => {
         "likes": 4
     }
 
-    await addABlog(newBlog, token)
-        .expect(400)
-
-    const blogs = await getBlogsInDB()
-    expect(blogs).toHaveLength(initialBlogs.length)
+    const response = await login(initialUser)
+    if (response.body.token) {
+        await addABlog(newBlog, `Bearer ${response.body.token}`)
+            .expect(400)
+            .expect("Content-Type", /application\/json/)
+        const blogs = await getBlogsInDB();
+        if (blogs) expect(blogs).toHaveLength(initialBlogs.length);
+    }
 })
 
 afterAll(() => {
