@@ -27,9 +27,9 @@ describe("when there is initially a user in db", () => {
         const usersInitiallyInDb = await User.find({})
 
         const newUser = {
-            name: "oluwatobi oyejide",
-            username: "oyejideoyetunji",
-            password: "123456"
+            name: "ayodele oyejide",
+            username: "inspiredjames",
+            password: "abcdefg"
         }
 
         await api
@@ -37,13 +37,14 @@ describe("when there is initially a user in db", () => {
             .send(newUser)
             .expect(201)
             .expect("Content-Type", /application\/json/)
+            .catch(error => {console.error(error)})
 
         const usersInDbAfterRequest = await User.find({})
 
         if(usersInDbAfterRequest) expect(usersInDbAfterRequest).toHaveLength(usersInitiallyInDb.length + 1)
     })
 
-    test("creation of a new user fails with appropriate error message when the username already exists in db",
+    test("creation of a new user fails with appropriate error message when the username already exists in db or is less than 3",
         async () => {
             const usersInitiallyInDb = await User.find({})
 
@@ -60,6 +61,46 @@ describe("when there is initially a user in db", () => {
                 .expect("Content-Type", /application\/json/)
 
             if(response) expect(response.body.message).toContain("`username` to be unique")
+
+            const usersInDbAfterRequest = await User.find({})
+            if (usersInDbAfterRequest) expect(usersInDbAfterRequest).toHaveLength(usersInitiallyInDb.length)
+
+            const newUser1 = {
+                name: "tobi oyejide",
+                username: "js",
+                password: "123456"
+            }
+
+            const response1 = await api
+                .post("/api/users")
+                .send(newUser1)
+                .expect(400)
+                .expect("Content-Type", /application\/json/)
+
+            if (response1) expect(response1.body.message).toContain("User validation failed")
+
+            const usersInDbAfterRequest1 = await User.find({})
+            if (usersInDbAfterRequest1) expect(usersInDbAfterRequest1).toHaveLength(usersInitiallyInDb.length)
+        }
+    )
+
+    test("creation of a new user fails with appropriate error message when the length of the password is less than 3",
+        async () => {
+            const usersInitiallyInDb = await User.find({})
+
+            const newUser = {
+                name: "tobi jide",
+                username: "cooldev",
+                password: "12"
+            }
+
+            const response = await api
+                .post("/api/users")
+                .send(newUser)
+                .expect(400)
+                .expect("Content-Type", /application\/json/)
+
+            if (response) expect(response.body.message).toContain("invalid password format")
 
             const usersInDbAfterRequest = await User.find({})
             if (usersInDbAfterRequest) expect(usersInDbAfterRequest).toHaveLength(usersInitiallyInDb.length)

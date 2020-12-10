@@ -1,5 +1,7 @@
 const mongoose = require("mongoose")
+const bcrypt = require("bcrypt")
 const Blog = require("../model/blog")
+const User = require("../model/user")
 const supertest = require("supertest")
 const app = require("../app")
 const logger = require("../utils/logger")
@@ -21,10 +23,29 @@ const initialBlogs = [
     }
 ]
 
+const initialUser = {
+    "name": "ayo oyejide",
+    "username": "inspiredjide",
+    "password": "abcdefg"
+}
+
 async function initializeDB(){
     await Blog.deleteMany({}).catch(error => { logger.error(error) })
+    await User.deleteMany({}).catch(error => { logger.error(error) })
+
+    const passwordHash = await bcrypt.hash(initialUser.password, 10)
+    const userDocument = new User({
+        name: initialUser.name,
+        username: initialUser.username,
+        passwordHash
+    })
+    const user = await userDocument.save()
+
     for(const blog of initialBlogs){
-        const blogDocument = new Blog(blog)
+        const blogDocument = new Blog({
+            ...blog,
+            user: user._id
+        })
         await blogDocument.save()
     }
 }
@@ -41,14 +62,23 @@ function getABlog(id){
         .get(`/api/blogs/${id}`)
 }
 
-function deleteABlog(id){
+function deleteABlog(id, token){
     return api
         .delete(`/api/blogs/${id}`)
+        .set("Authorization", token)
 }
 
-function addABlog(newBlog){
-    return api.post("/api/blogs")
+function addABlog(newBlog, token){
+    return api
+        .post("/api/blogs")
         .send(newBlog)
+        .set("Authorization", token)
+}
+
+function login(user){
+    return api
+        .post("/api/login")
+        .send(user)
 }
 
 async function getBlogsInDB(){
@@ -71,7 +101,7 @@ async function noneExistingId(){
 }
 
 module.exports = {
-    api, initialBlogs, initializeDB, getAllBlogs, addABlog, getBlogsInDB, noneExistingId, getABlog, deleteABlog
+    api, initialBlogs, initialUser, initializeDB, getAllBlogs, addABlog, getBlogsInDB, noneExistingId, getABlog, deleteABlog, login
 }
 
 afterAll(() => {

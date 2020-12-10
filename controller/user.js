@@ -6,7 +6,9 @@ const User = require("../model/user")
 
 userRouter.get("/", async(request, response, next) => {
     try {
-        const users = await User.find({})
+        const users = await User
+            .find({})
+            .populate("blogs", { author: 1, title: 1, url: 1, })
         if(users){
             response.status(200).json(users)
         }else {
@@ -19,6 +21,7 @@ userRouter.get("/", async(request, response, next) => {
 
 userRouter.post("/", async (request, response, next) => {
     const userData = request.body
+    if(userData.password.length < 3) return response.status(400).json({ message: "invalid password format" })
 
     try{
         const passwordHash = await bcrypt.hash(userData.password, 10)

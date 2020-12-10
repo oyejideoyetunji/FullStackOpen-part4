@@ -1,12 +1,15 @@
 const Blog = require("../model/blog")
 const User = require("../model/user")
+const jwt = require("jsonwebtoken")
 const blogRouter = require("express").Router()
 
 
 
 blogRouter.get("/", async (request, response, next) => {
     try {
-        const blogs = await Blog.find({})
+        const blogs = await Blog
+            .find({})
+            .populate("user", { name: 1, username: 1 })
         if(blogs){
             response.status(200).json(blogs)
         }else {
@@ -36,8 +39,18 @@ blogRouter.delete("/:id", async (request, response, next) => {
     const id = request.params.id
 
     try {
-        await Blog.findByIdAndRemove(id)
-        response.status(204).end()
+        const decodedToken = jwt.verify(request.token, process.env.SECRETE)
+        if (!(request.token && decodedToken.id)) {
+            return response.status(401).json({ message: "invalid or missing token" })
+        }
+
+        const blog = await Blog.findById(id)
+        if (blog.user.toString() === decodedToken.id.toString()){
+            await Blog.findByIdAndRemove(id)
+            response.status(204).end()
+        }else{
+            return response.status(401).json({ message: "invalid or missing token" })
+        }
     } catch (error) {
         next(error)
     }
@@ -62,14 +75,14 @@ blogRouter.put("/:id", async (request, response, next) => {
 blogRouter.post("/", async (request, response, next) => {
 
     try {
-        if(request.body.userId){
-            const user = await User.findById(request.body.userId)
+        const blogData = request.body
+        const decodedToken = jwt.verify(request.token, process.env.SECRETE)
+        if(request.token && decodedToken.id){
+            const user = await User.findById(decodedToken.id)
             if(user){
-                delete request.body.userId
-
                 const blog = new Blog({
-                    ...request.body,
-                    "likes": request.body.likes ? request.body.likes : 0,
+                    ...blogData,
+                    "likes": blogData.likes ? blogData.likes : 0,
                     user: user._id
                 })
                 const newBlog = await blog.save()
@@ -81,10 +94,10 @@ blogRouter.post("/", async (request, response, next) => {
                     response.status(500).json({ message: "an error ocurred on the server" })
                 }
             }else{
-                response.status(400).json({ message: "invalid or non-existing user id in blog data" })
+                response.status(400).json({ message: "invalid token" })
             }
         }else {
-            response.status(400).json({ message: "incomplete blog data" })
+            response.status(401).json({ message: "missing or invalid token" })
         }
     } catch(error){
         next(error)
