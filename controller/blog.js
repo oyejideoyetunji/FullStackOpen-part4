@@ -6,6 +6,7 @@ const blogRouter = require("express").Router()
 
 
 blogRouter.get("/", async (request, response, next) => {
+
     try {
         const blogs = await Blog
             .find({})
@@ -18,13 +19,16 @@ blogRouter.get("/", async (request, response, next) => {
     } catch(error){
         next(error)
     }
+
 })
 
 blogRouter.get("/:id", async (request, response, next) => {
     const id = request.params.id
 
     try {
-        const blog = await Blog.findById(id)
+        const blog = await Blog
+            .findById(id)
+            .populate("user", { name: 1, username: 1 })
         if(blog){
             response.status(200).json(blog)
         }else {
@@ -57,11 +61,14 @@ blogRouter.delete("/:id", async (request, response, next) => {
 })
 
 blogRouter.put("/:id", async (request, response, next) => {
-    const id = request.params.id
-    const updatedData = request.body
 
     try{
-        const result = await Blog.findByIdAndUpdate(id, updatedData, { new: true, runValidators: true, context: "query" })
+        const id = request.params.id
+        const updatedData = request.body
+        const result = await Blog
+            .findByIdAndUpdate(id, updatedData, { new: true, runValidators: true, context: "query" })
+            .populate("user", { name: 1, username: 1 })
+
         if(result){
             response.status(201).json(result)
         } else {
@@ -77,6 +84,7 @@ blogRouter.post("/", async (request, response, next) => {
     try {
         const blogData = request.body
         const decodedToken = jwt.verify(request.token, process.env.SECRETE)
+
         if(request.token && decodedToken.id){
             const user = await User.findById(decodedToken.id)
             if(user){
@@ -86,10 +94,14 @@ blogRouter.post("/", async (request, response, next) => {
                     user: user._id
                 })
                 const newBlog = await blog.save()
+
                 if (newBlog) {
+                    const blogWithUserData = await Blog.findById(newBlog._id).populate("user", { name: 1, username: 1 })
+                    if(blogWithUserData){
+                        response.status(201).json(blogWithUserData)
+                    }
                     user.blogs = user.blogs.concat(newBlog._id)
                     await user.save()
-                    response.status(201).json(newBlog)
                 } else {
                     response.status(500).json({ message: "an error ocurred on the server" })
                 }
