@@ -14,7 +14,8 @@ const customMiddleWare = require("./utils/customMiddleware")
 logger.info("connecting to mongodb")
 
 mongoose.connect(
-    config.mongodbUrl, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true }
+    config.mongodbUrl,
+    { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true }
 ).then(() => {
     logger.info("Successfully connected to mongodb")
 }).catch( error => {
