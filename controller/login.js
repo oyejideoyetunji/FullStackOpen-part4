@@ -23,7 +23,7 @@ loginRouter.post("/", async (request, response, next) => {
 
         response
             .status(200)
-            .json({ token, name: user.name, username: user.username })
+            .json({ token, name: user.name, username: user.username, id: user._id.toString() })
     }catch(error){
         next(error)
     }
