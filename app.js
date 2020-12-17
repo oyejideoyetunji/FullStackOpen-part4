@@ -28,6 +28,12 @@ app.use(customMiddleWare.tokenExtractor)
 app.use("/api/blogs", blogRouter)
 app.use("/api/users", userRouter)
 app.use("/api/login", loginRouter)
+
+if(process.env.NODE_ENV === "test"){
+    const testRouter = require("./controller/test")
+    app.use("/api/test", testRouter)
+}
+
 app.use(customMiddleWare.errorHandler)
 app.use(customMiddleWare.unknownEndPoint)
 
